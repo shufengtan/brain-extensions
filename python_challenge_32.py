@@ -15,23 +15,35 @@ def search():
     that_idx = None     # index for THAT dimension
     this_counts = None  # counts for THIS dimension
     this_dim = None     # len of THIS dimension
-    this_choices = None # choices in THIS dimension, len == 0 or this_dim
+    this_sol = None # choices in THIS dimension, len == 0 or this_dim
     def counts_assignable(cpoint, choice, sol):
-        #print 'choice point', cpoint, 'choice', choice, 'sol len', len(sol)
-        if len(this_choices) > cpoint and Choices[choice] not in set([c[that_idx] for c in this_choices[cpoint]]):
+        if len(this_sol) > cpoint and Choices[choice] not in set([c[that_idx] for c in this_sol[cpoint]]):
             return False
         if cpoint in sol:
             return sol[cpoint] == choice
         else:
             sol2 = dict(sol)
             sol2[cpoint] = choice
+            sol_counts = map(len, re.findall(r'x+', ''.join([Choices[sol2[k]] for k in sorted(sol2.keys())])))
+            if len(sol_counts) > len(this_counts):
+                return False
+            if len(sol_counts) > 0 and max(sol_counts) > max(this_counts):
+                return False
             if len(sol2) == this_dim:
-                sol_counts = map(len, re.findall(r'x+', ''.join([Choices[sol2[k]] for k in sorted(sol2.keys())])))
-                if sol_counts != this_counts:
-                    return False
-            sol[cpoint] = choice
+                return sol_counts == this_counts
+            if 0 in sol2:
+                sol_this_counts = zip(sol_counts[:-1], this_counts)
+                if len(sol_this_counts) >= 1:
+                    #print '##', sol_this_counts
+                    for c1, c2 in sol_this_counts:
+                        #print '# that idx %d: %d, %d' % (that_idx, c1, c2)
+                        if c1 != c2:
+                            return False
+            else:
+                print "??", sol2
             return True
     h_sol = []
+    v_sol = []
     for itr in xrange(10):
         print 'iteration', itr
         v_sol = []
@@ -40,10 +52,12 @@ def search():
             that_idx = v_idx
             this_counts = H_counts[v_idx]
             this_dim = H_dim
-            this_choices = h_sol
-            v_sol.append([hc for hc in backtracking(range(H_dim), Choices, counts_assignable)])
-            for vc in v_sol[-1]:
-                print 'V', v_idx, vc
+            this_sol = h_sol
+            ss = []
+            for hc in backtracking(range(H_dim), Choices, counts_assignable):
+                print 'V %d |%s|' % (v_idx, ''.join([hc[x] for x in range(H_dim)]))
+                ss.append(hc)
+            v_sol.append(ss)
         print 'v_sol', map(len, v_sol)
         for vs in v_sol:
             if len(vs) > 1:
@@ -59,10 +73,12 @@ def search():
             that_idx = h_idx
             this_counts = V_counts[h_idx]
             this_dim = V_dim
-            this_choices = v_sol
-            h_sol.append([vc for vc in backtracking(range(V_dim), Choices, counts_assignable)])
-            for hc in h_sol[-1]:
-                print 'H', h_idx, hc
+            this_sol = v_sol
+            ss = []
+            for vc in backtracking(range(V_dim), Choices, counts_assignable):
+                print 'H %d |%s|' % (h_idx, ''.join([vc[y] for y in range(V_dim)]))
+                ss.append(vc)
+            h_sol.append(ss)
 
 if __name__ == '__main__':
     import sys
