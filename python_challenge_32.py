@@ -119,9 +119,10 @@ class PC32:
         candidates = self.candidates
         cand_counts = [None, None]
         prev_cand_counts = [None, None]
-        for itr in xrange(1000):
-            print 'Iteration', itr
-            for d_i in d_i_list:
+        size = len([x for x in self.dof if x <= 500])
+        while True:
+            print 'Size =', size
+            for d_i in d_i_list[:size]:
                 self.d_i = d_i
                 this_dim = dim[d_i[0]]
                 that_dim = dim[1 - d_i[0]]
@@ -132,13 +133,15 @@ class PC32:
                         self.candidates[d_i].append(candidate)
                 print 'D%d %2d %d/%d' % (d_i[0], d_i[1], len(self.candidates[d_i]), self.dof[d_i])
             for d in (0, 1):
-                cand_counts[d] = [len(self.candidates[(d, idx)]) for idx in xrange(dim[1-d])]
+                cand_counts[d] = [len(self.candidates[(d, idx)]) for idx in xrange(dim[1-d]) if (d, idx) in self.candidates]
+            print cand_counts[0]
+            print cand_counts[1]
             if cand_counts[0] == prev_cand_counts[0] and cand_counts[1] == prev_cand_counts[1]:
-                print 'Candidate counts remain the same. Stop.', cand_counts
-                break
+                print 'Candidate counts remain the same. Increasing size by', 4
+                size += 4
             for d in (0, 1):
                 prev_cand_counts[d] = cand_counts[d]
-            if len(set(cand_counts[0])) == 1 and cand_counts[0][0] == 1:
+            if len(cand_counts[0]) == dim[0] and len(set(cand_counts[0])) == 1 and cand_counts[0][0] == 1:
                 print '** Found unique solution'
                 break
         for y in xrange(dim[1]):
