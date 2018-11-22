@@ -142,6 +142,10 @@ class SudokuSolver(object):
                     print(f'False solution (b {i},{j}){str_game}')
                     return False
         return True
+    def present(self, game0, game):
+        for row0, row in zip(game0, game):
+            row = ['.' if d0 == d else d for d0, d in zip(row0, row)]
+            print(''.join(row0).replace('0', '_'), ''.join(row))
     def df_search(self, game0, next_moves=[None]):
         '''Depth-first search: evaluate candidate digits for all blanks.'''
         for next_move in next_moves:
@@ -151,7 +155,7 @@ class SudokuSolver(object):
                 if n_blanks == 0:
                     if self.final_check(game):
                         print(f'Solved!\n{self.to_str(game)}')
-                        return True
+                        return game
                     else:
                         break
                 print(f'{n_blanks} blanks')
@@ -181,14 +185,15 @@ class SudokuSolver(object):
                     scores = dict([(k, sum([d2n[x] for x in branches[k]])) for k in branches])
                     ij = sorted(branches.keys(), key=scores.get)[0]
                     print(f'Possible choices for [{ij[0]}][{ij[1]}]: {branches[ij]}')
-                    if self.df_search(game, [(ij[0], ij[1], d) for d in branches[ij]]):
-                        return True
+                    res = self.df_search(game, [(ij[0], ij[1], d) for d in branches[ij]])
+                    if res:
+                        return res
                     else:
                         break
 
 if __name__ == "__main__":
     solver = SudokuSolver()
-    game = solver.to_lol('''
+    game0 = solver.to_lol('''
         020905010
         049008000
         031000400
@@ -201,7 +206,8 @@ if __name__ == "__main__":
 ''')
     import time
     t0 = time.time()
+    game = solver.spawn(game0, [])
     solver.squeeze(game)
-    solver.df_search(game)
+    res = solver.df_search(game)
     print(f'Solved in {int(1000*(time.time() - t0))} milliseconds.')
-
+    solver.present(game0, res)
