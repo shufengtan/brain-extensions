@@ -9,7 +9,7 @@ class SudokuSolver(object):
         '''Convert a game in string to list of lists'''
         return [[c for c in row.strip()] for row in _str.strip().splitlines()]
     def to_str(self, game):
-        return '\n'.join([''.join(row) for row in game])
+        return '\n'.join([' '.join(row) for row in game])
     def col(self, game, ic):
         return [x for row in game for x in row[ic]]
     def blk(self, game, ix, iy):
@@ -145,7 +145,7 @@ class SudokuSolver(object):
     def present(self, game0, game):
         for row0, row in zip(game0, game):
             row = ['.' if d0 == d else d for d0, d in zip(row0, row)]
-            print(''.join(row0).replace('0', '_'), ''.join(row))
+            print(' '.join(row0).replace('0', '_'), '\t', ' '.join(row))
     def df_search(self, game0, next_moves=[None]):
         '''Depth-first search: evaluate candidate digits for all blanks.'''
         for next_move in next_moves:
@@ -190,9 +190,37 @@ class SudokuSolver(object):
                         return res
                     else:
                         break
+    def solve(self, game0):
+        import time
+        t0 = time.time()
+        game = self.spawn(game0, [])
+        self.squeeze(game)
+        res = self.df_search(game)
+        if res:
+            print(f'Solved in {int(1000*(time.time() - t0))} milliseconds.')
+            self.present(game0, res)
+        else:
+            print(f'WTF?\n{self.to_str(game0).replace("0", "_")}')
+    def parse_websudoku(self, html):
+        import re
+        tbl = html[html.find('<TABLE id="puzzle_grid"'):]
+        tbl = tbl[tbl.find('<TR>')+4:tbl.find('</TABLE>')]
+        return [[(re.findall(r'VALUE="(\d)', td) or ['0'])[0] for td in tr.split('</TD><TD ')] for tr in tbl.split('</TR><TR>')]
 
 if __name__ == "__main__":
     solver = SudokuSolver()
+    import sys
+    import requests
+    import time
+    if len(sys.argv) > 1:
+        for arg in sys.argv[1:]:
+            if arg.find('https://www.websudoku.com') == 0:
+                t0 = time.time()
+                html = requests.get(arg.replace('www', 'show')).text
+                print(f'Fetched game in {int(1000*(time.time() - t0))} milliseconds.')
+                game0 = solver.parse_websudoku(html)
+                solver.solve(game0)
+        sys.exit()
     game0 = solver.to_lol('''
         020905010
         049008000
@@ -204,10 +232,4 @@ if __name__ == "__main__":
         000307000
         000000065
 ''')
-    import time
-    t0 = time.time()
-    game = solver.spawn(game0, [])
-    solver.squeeze(game)
-    res = solver.df_search(game)
-    print(f'Solved in {int(1000*(time.time() - t0))} milliseconds.')
-    solver.present(game0, res)
+    solver.solve(game0)
