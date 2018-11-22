@@ -1,8 +1,8 @@
-import urllib2
+import requests
 import re
 
 url = 'http://www.gutenberg.org/dirs/7/8/785/785.txt'
-text = urllib2.urlopen(url).read()
+text = requests.get(url).text
 
 begin = text.index('BOOK I')
 end = text.rindex('\nEnd of the Project Gutenberg')
@@ -31,9 +31,8 @@ for idx, line in enumerate(lines):
                 word[w].append((book, idx))
             else:
                 word[w] = [(book, idx)]
-print line_count, 'lines', word_count, 'words'
-words = word.keys()
-words.sort(key=lambda w: (len(word[w]), word[w][0][1]))
+print(line_count, 'lines', word_count, 'words')
+words = sorted(word.keys(), key=lambda w: (len(word[w]), word[w][0][1]))
 for w in words:
     if len(word[w]) < 100:
-        print w, len(word[w])
+        print(w, len(word[w]))
