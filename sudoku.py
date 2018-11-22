@@ -203,5 +203,5 @@ if __name__ == "__main__":
     t0 = time.time()
     solver.squeeze(game)
     solver.df_search(game)
-    print(f'Solved in {int(1000*(time.time() - t0))} miliseconds.')
+    print(f'Solved in {int(1000*(time.time() - t0))} milliseconds.')
 
