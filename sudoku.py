@@ -182,13 +182,14 @@ class SudokuSolver(object):
                     continue
                 else:
                     # This is my heuristic
-                    scores = dict([(k, sum([d2n[x] for x in branches[k]])) for k in branches])
+                    scores = dict([(k, sum([d2n.get(x, 0) for x in branches[k]])) for k in branches])
                     ij = sorted(branches.keys(), key=scores.get)[0]
                     print(f'Possible choices for [{ij[0]}][{ij[1]}]: {branches[ij]}')
                     res = self.df_search(game, [(ij[0], ij[1], d) for d in branches[ij]])
                     if res:
                         return res
                     else:
+                        self.bt_count += 1
                         break
     def solve(self, game0):
         import time
@@ -197,7 +198,7 @@ class SudokuSolver(object):
         self.squeeze(game)
         res = self.df_search(game)
         if res:
-            print(f'Solved in {int(1000*(time.time() - t0))} milliseconds.')
+            print(f'Solved in {int(1000*(time.time() - t0))} milliseconds, {self.bt_count} backtracks.')
             self.present(game0, res)
         else:
             print(f'WTF?\n{self.to_str(game0).replace("0", "_")}')
@@ -212,14 +213,16 @@ if __name__ == "__main__":
     import sys
     import requests
     import time
+    import re
     if len(sys.argv) > 1:
         for arg in sys.argv[1:]:
             if arg.find('https://www.websudoku.com') == 0:
                 t0 = time.time()
                 html = requests.get(arg.replace('www', 'show')).text
-                print(f'Fetched game in {int(1000*(time.time() - t0))} milliseconds.')
+                game_id = re.findall(r'HREF="//[^"]+set_id=([^"]+)', html)[0]
                 game0 = solver.parse_websudoku(html)
                 solver.solve(game0)
+                print(f'Fetched game {game_id} in {int(1000*(time.time() - t0))} milliseconds.')
         sys.exit()
     game0 = solver.to_lol('''
         020905010
