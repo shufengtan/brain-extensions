@@ -41,13 +41,15 @@ function make_grid(word_count){
          wl_set.push(wl);
       }
    }
+   wl_set.sort();
    let grid = " ";
    for (const wl of wl_set){
       grid += " " + wl;
    }
-   grid += " Tot\n"
+   grid += "   Tot\n"
+   let total = 0;
    for (const [w0, wlc] of Object.entries(word_count)){
-      grid += w0;
+      grid += w0.toUpperCase();
       subtot = 0
       for (const wl of wl_set){
          if (wl in wlc) {
@@ -57,10 +59,13 @@ function make_grid(word_count){
             grid += " -";
          }
       }
-      grid += " " + subtot + "\n";
+      grid += "   " + subtot + "\n";
+      total += subtot;
    }
+   grid += "\nTotal " + total
    return grid;
 }
 
-grid = make_grid(count_words(get_sb_words()));
-console.log(grid);
+function count_sb_words(){
+   return make_grid(count_words(get_sb_words()));
+}
