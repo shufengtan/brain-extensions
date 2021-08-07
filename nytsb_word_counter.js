@@ -1,15 +1,17 @@
+// Please read Dan Harper's gist https://gist.github.com/danharper/8364399
+// to install this as a Chrome extension
+
 function get_sb_words(){
-   let wa = [];
+   let wlist = [];
+   const tag_re = /<[^>]+>/g;
    for (const spn of document.getElementsByTagName("span")) {
       if (spn.className == "sb-anagram") {
-         let word = spn.innerHTML.replace("<span class=\"sb-anagram-key\">", "").replace("</span>", "");
-         if (wa.includes(word)){
-            break;
-         }
-         wa.push(word);
+         let word = spn.innerHTML.replace(tag_re, "");
+         if (wlist.includes(word)) break;
+         wlist.push(word);
       }
    }
-   return wa;
+   return wlist;
 }
 
 function count_words(word_list){
@@ -35,10 +37,9 @@ function make_grid(word_count){
    let wl_set = [];
    for (const [w0, wlc] of Object.entries(word_count)){
       for (const [wl, c] of Object.entries(wlc)){
-         if (wl_set.includes(wl)) {
-            continue;
+         if (! wl_set.includes(wl)) {
+            wl_set.push(wl);
          }
-         wl_set.push(wl);
       }
    }
    wl_set.sort();
@@ -46,9 +47,12 @@ function make_grid(word_count){
    for (const wl of wl_set){
       grid += " " + wl;
    }
-   grid += "   Tot\n"
+   w0_list = Object.keys(word_count);
+   w0_list.sort();
+   grid += "  Tot\n"
    let total = 0;
-   for (const [w0, wlc] of Object.entries(word_count)){
+   for (const w0 of w0_list){
+      wlc = word_count[w0];
       grid += w0.toUpperCase();
       subtot = 0
       for (const wl of wl_set){
@@ -59,13 +63,13 @@ function make_grid(word_count){
             grid += " -";
          }
       }
-      grid += "   " + subtot + "\n";
+      grid += "  [" + subtot + "]\n";
       total += subtot;
    }
-   grid += "\nTotal " + total
+   grid += "Tot " + total
    return grid;
 }
 
-function count_sb_words(){
+function get_sb_grid(){
    return make_grid(count_words(get_sb_words()));
 }
