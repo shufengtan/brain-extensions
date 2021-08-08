@@ -33,43 +33,28 @@ function count_words(word_list){
    return word_count
 }
 
-function make_grid(word_count){
-   let wl_set = [];
-   for (const [w0, wlc] of Object.entries(word_count)){
+function diff_shunns_grid(word_count){
+   const shunns_word_count = {}; // This needs to be provided
+   let diff = "";
+   for (const [w0, wlc] of Object.entries(shunns_word_count)){
+      w0lc = w0.toLowerCase()
       for (const [wl, c] of Object.entries(wlc)){
-         if (! wl_set.includes(wl)) {
-            wl_set.push(wl);
+         let c1 = 0;
+         if (w0lc in word_count && wl in word_count[w0lc]){
+            c1 = word_count[w0lc][wl];
          }
+         diff += " " + w0 + wl + ": "  + c1 + "/" + c + ", ";
       }
+      diff += "
+";
    }
-   wl_set.sort();
-   let grid = " ";
-   for (const wl of wl_set){
-      grid += " " + wl;
-   }
-   w0_list = Object.keys(word_count);
-   w0_list.sort();
-   grid += "  Tot\n"
-   let total = 0;
-   for (const w0 of w0_list){
-      wlc = word_count[w0];
-      grid += w0.toUpperCase();
-      subtot = 0
-      for (const wl of wl_set){
-         if (wl in wlc) {
-            grid += " " + wlc[wl];
-            subtot += wlc[wl];
-         } else {
-            grid += " -";
-         }
-      }
-      grid += "  [" + subtot + "]\n";
-      total += subtot;
-   }
-   grid += "Tot " + total
-   return grid;
+   return diff;
 }
 
-function get_sb_grid(){
-   return make_grid(count_words(get_sb_words()));
-}
+(function() {
+//   console.log(get_sb_grid());
+   let diff = diff_shunns_grid(count_words(get_sb_words()));
+   //alert(diff);
+   console.log(diff);
+   //alert(get_sb_grid());
+})();
