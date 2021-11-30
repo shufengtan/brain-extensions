@@ -63,6 +63,7 @@ function parse_hints_text(text){
     let hints_word_count = {};
     for (const line of text.split("\n")) {
         if (/^[ \d]+Σ$/.test(line)){
+            console.log(line.replace(/^ +/, "    "));
             wlen = line.replace(/^ +/, "").replace(/ *Σ/, "").replaceAll(/ +/g, " ").split(" ");
         } else if (/^[A-Z]: /.test(line)) {
             c0 = line.substring(0, 1);
@@ -78,6 +79,8 @@ function parse_hints_text(text){
                 let cc_c = tlc.split('-');
                 hints_word_count[cc_c[0]] = parseInt(cc_c[1]);
             }
+        } else if (! /[a-z]/.test(line)) {
+            console.log(line);
         }
     }
     // console.log(JSON.stringify(hints_word_count));
